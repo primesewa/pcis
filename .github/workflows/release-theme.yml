@@ -1,0 +1,113 @@
+name: Build and Upload Theme to Cloudflare R2
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  THEME_SLUG: pics-theme
+  R2_BUCKET: pics-theme
+  PUBLIC_BASE_URL: https://pics-theme-update.primeitsewa.com
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout theme
+        uses: actions/checkout@v4
+
+      - name: Set version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip rsync awscli
+
+      - name: Optional npm build
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+            npm run build --if-present
+          fi
+
+      - name: Prepare production theme folder
+        run: |
+          mkdir -p build/${THEME_SLUG}
+
+          rsync -av ./ build/${THEME_SLUG}/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='build' \
+            --exclude='package-lock.json' \
+            --exclude='package.json' \
+            --exclude='vite.config.js' \
+            --exclude='webpack.config.js' \
+            --exclude='tailwind.config.js' \
+            --exclude='postcss.config.js' \
+            --exclude='src' \
+            --exclude='tests'
+
+      - name: Create theme ZIP
+        run: |
+          cd build
+          zip -r ../${THEME_SLUG}-${VERSION}.zip ${THEME_SLUG}
+
+      - name: Create update.json
+        run: |
+          cat > update.json <<EOF
+          {
+            "version": "${VERSION}",
+            "details_url": "${PUBLIC_BASE_URL}/themes/${THEME_SLUG}/changelog.html",
+            "download_url": "${PUBLIC_BASE_URL}/packages/${THEME_SLUG}-${VERSION}.zip"
+          }
+          EOF
+
+      - name: Create changelog.html
+        run: |
+          cat > changelog.html <<EOF
+          <h1>${THEME_SLUG} ${VERSION}</h1>
+          <p>Theme update version ${VERSION} is now available.</p>
+          EOF
+
+      - name: Upload ZIP to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          AWS_EC2_METADATA_DISABLED: true
+        run: |
+          aws s3 cp ${THEME_SLUG}-${VERSION}.zip \
+            s3://${R2_BUCKET}/packages/${THEME_SLUG}-${VERSION}.zip \
+            --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com \
+            --content-type application/zip \
+            --cache-control "public, max-age=31536000"
+
+      - name: Upload update.json to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          AWS_EC2_METADATA_DISABLED: true
+        run: |
+          aws s3 cp update.json \
+            s3://${R2_BUCKET}/themes/${THEME_SLUG}/update.json \
+            --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com \
+            --content-type application/json \
+            --cache-control "no-cache"
+
+      - name: Upload changelog.html to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          AWS_EC2_METADATA_DISABLED: true
+        run: |
+          aws s3 cp changelog.html \
+            s3://${R2_BUCKET}/themes/${THEME_SLUG}/changelog.html \
+            --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com \
+            --content-type text/html \
+            --cache-control "no-cache"

@@ -1,32 +1,14 @@
-<?php
+﻿<?php
 /**
  * Template part for displaying single post content
  *
  * @package prime_capital_institution_suite
  */
 
-$hero_image = has_post_thumbnail() ? get_the_post_thumbnail_url(get_the_ID(), 'full') : '';
 $reading_time = ceil(str_word_count(strip_tags(get_the_content())) / 200);
-$hero_style = $hero_image ? 'style="background-image: linear-gradient(120deg, rgba(9,10,29,0.9), rgba(9,10,29,0.4)), url(' . esc_url($hero_image) . ');"' : '';
-$hero_class = $hero_image ? 'single-hero has-hero-image' : 'single-hero no-hero-image';
 
 $share_url = rawurlencode(get_permalink());
 $share_title = rawurlencode(get_the_title());
-
-$sidebar_stats = array(
-        array(
-        'number' => get_theme_mod('prime_capital_institution_suite_stat1_number', '22+'),
-        'label' => get_theme_mod('prime_capital_institution_suite_stat1_label', 'Years'),
-    ),
-        array(
-        'number' => get_theme_mod('prime_capital_institution_suite_stat2_number', '58'),
-        'label' => get_theme_mod('prime_capital_institution_suite_stat2_label', 'Branches'),
-    ),
-);
-
-$footer_phone = get_theme_mod('prime_capital_institution_suite_phone_text', '+977-1-4123456');
-$footer_email = get_theme_mod('prime_capital_institution_suite_email_text', 'info@swastiklbs.com.np');
-$footer_location = get_theme_mod('prime_capital_institution_suite_location_text', 'Kathmandu, Nepal');
 
 $single_post_title = trim(wp_strip_all_tags(get_the_title()));
 if ('' === $single_post_title) {
@@ -40,11 +22,17 @@ if ('' === $single_post_title) {
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class('single-post'); ?>>
-    <section class="<?php echo esc_attr($hero_class); ?>" <?php echo $hero_style; ?>>
-        <div class="single-hero-inner container">
-            <h1 class="single-hero-title"><?php echo esc_html($single_post_title); ?></h1>
-        </div>
-    </section>
+    <?php
+    get_template_part(
+        'template-parts/section',
+        'hero',
+        array(
+            'eyebrow' => __('Post', 'prime-capital-institution-suite'),
+            'title' => $single_post_title,
+            'description' => '',
+        )
+    );
+    ?>
 
     <div class="container single-layout">
         <div class="single-grid">
@@ -110,36 +98,11 @@ the_post_navigation(
             </div>
 
             <aside class="single-sidebar">
-                <div class="sidebar-card">
-                    <h4><?php esc_html_e('Key Highlights', 'prime-capital-institution-suite'); ?></h4>
-                    <div class="sidebar-stats">
-                        <?php foreach ($sidebar_stats as $stat): ?>
-                            <div>
-                                <span class="sidebar-stat-number"><?php echo esc_html($stat['number']); ?></span>
-                                <span class="sidebar-stat-label"><?php echo esc_html($stat['label']); ?></span>
-                            </div>
-                        <?php
-endforeach; ?>
-                    </div>
+                <div class="sidebar-card search-card">
+                    <h4><?php esc_html_e('Search the archive', 'prime-capital-institution-suite'); ?></h4>
+                    <?php get_template_part('template-parts/sidebar', 'search-form'); ?>
                 </div>
-
-                <div class="sidebar-card contact-card">
-                    <h4><?php esc_html_e('Contact Center', 'prime-capital-institution-suite'); ?></h4>
-                    <ul class="sidebar-contact-list">
-                        <li>
-                            <i class="fa-solid fa-location-dot"></i>
-                            <span><?php echo esc_html($footer_location); ?></span>
-                        </li>
-                        <li>
-                            <i class="fa-solid fa-phone"></i>
-                            <a href="tel:<?php echo esc_attr(preg_replace('/\s+/', '', $footer_phone)); ?>"><?php echo esc_html($footer_phone); ?></a>
-                        </li>
-                        <li>
-                            <i class="fa-regular fa-envelope"></i>
-                            <a href="mailto:<?php echo esc_attr($footer_email); ?>"><?php echo esc_html($footer_email); ?></a>
-                        </li>
-                    </ul>
-                </div>
+                <?php get_template_part('template-parts/sidebar', 'cta-panel'); ?>
 
                 <?php if (is_active_sidebar('sidebar-1')): ?>
                     <?php dynamic_sidebar('sidebar-1'); ?>
@@ -149,3 +112,4 @@ endif; ?>
         </div>
     </div>
 </article>
+

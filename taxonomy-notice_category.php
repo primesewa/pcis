@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying archive pages
+ * The template for Notice Category taxonomy archives.
  *
  * @package prime_capital_institution_suite
  */
@@ -10,20 +10,11 @@ get_header();
 
 <section class="archive-hero">
     <div class="container">
-        <p class="eyebrow"><?php esc_html_e('Insights & Updates', 'prime-capital-institution-suite'); ?></p>
+        <p class="eyebrow"><?php esc_html_e('Notice Category', 'prime-capital-institution-suite'); ?></p>
+        <h1 class="page-title"><?php echo esc_html(single_term_title('', false)); ?></h1>
         <?php
-        $archive_title = get_the_archive_title();
-        if (is_post_type_archive()) {
-            $post_type_obj = get_queried_object();
-            if ($post_type_obj && !empty($post_type_obj->labels->name)) {
-                $archive_title = $post_type_obj->labels->name;
-            }
-        }
-        ?>
-        <h1 class="page-title"><?php echo esc_html($archive_title); ?></h1>
-        <?php
-        $archive_description = get_the_archive_description();
-        if ($archive_description):
+        $archive_description = term_description();
+        if (!empty($archive_description)):
             ?>
             <p class="archive-desc"><?php echo wp_kses_post($archive_description); ?></p>
         <?php endif; ?>
@@ -42,11 +33,11 @@ get_header();
                             get_template_part('template-parts/content', get_post_type());
                         endwhile;
                         ?>
-                    </div><!-- .post-grid -->
+                    </div>
                     <?php
                     the_posts_pagination(
                         array(
-                            'screen_reader_text' => __('Posts navigation', 'prime-capital-institution-suite'),
+                            'screen_reader_text' => __('Notice navigation', 'prime-capital-institution-suite'),
                             'mid_size' => 1,
                             'prev_text' => '<span aria-hidden="true">&larr;</span> ' . esc_html__('Newer', 'prime-capital-institution-suite'),
                             'next_text' => esc_html__('Older', 'prime-capital-institution-suite') . ' <span aria-hidden="true">&rarr;</span>',
@@ -59,11 +50,23 @@ get_header();
             </div>
 
             <aside class="archive-aside">
-                <?php get_template_part('template-parts/sidebar', 'standard-panels'); ?>
+                <?php
+                ob_start();
+                ?>
+                <div class="aside-panel">
+                    <h4><?php esc_html_e('Browse All Notices', 'prime-capital-institution-suite'); ?></h4>
+                    <a class="aside-cta" href="<?php echo esc_url(get_post_type_archive_link('notice')); ?>">
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i><?php esc_html_e('View Notice Archive', 'prime-capital-institution-suite'); ?>
+                    </a>
+                </div>
+                <?php
+                $notice_tax_sidebar_panel = ob_get_clean();
+                get_template_part('template-parts/sidebar', 'standard-panels', array('extra_panels' => array($notice_tax_sidebar_panel)));
+                ?>
             </aside>
         </div>
     </div>
-</main><!-- #primary -->
+</main>
 
 <?php
 get_footer();
