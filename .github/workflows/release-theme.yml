@@ -24,7 +24,8 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y zip rsync awscli
+          sudo apt-get install -y zip rsync
+          aws --version
 
       - name: Optional npm build
         run: |
