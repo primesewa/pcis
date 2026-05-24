@@ -1,11 +1,15 @@
 /*
 Theme Name: Prime Capital Institution Suite
-Theme URI: https://primeitsewa.com/themes/prime-capital-institution-suite
+Theme URI: https://primeitsewa.com
 Author: Prime IT Sewa
 Author URI: https://primeitsewa.com
-Description: A luxury, premium WordPress theme for financial institutions and cooperatives, designed by Prime IT Sewa. Features high customization, responsive design, and premium UI.
-Version: 1.0.2
+Description: A premium WordPress theme for financial institutions and cooperatives, designed by Prime IT Sewa. Built with responsive design, clean structure, and customizable UI.
+Version: 1.0.3
+Requires at least: 6.2
+Tested up to: 6.5
+Requires PHP: 8.0
 Text Domain: prime-capital-institution-suite
+Update URI: https://pics-theme-update.primeitsewa.com/themes/prime-capital-institution-suite
 */
 
 :root {
